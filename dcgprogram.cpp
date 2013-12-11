@@ -2,25 +2,22 @@
 #include <fstream>   //file IO
 #include <string>    //strings
 #include <strstream> //stringstreams for converting data.
+#include <stdlib.h> 
 using namespace std;
 
+
 //--------------------------------------------------------
-// NAME		      : Noel Ganotisi
+// NAME		      : Noel Ganotisi and Ian Armit
 // STUDENT NUMBER : 6721898
 // COURSE		  : COMP4710
 // INSTRUCTOR	  : Carson K. Leung
 //
 // REMARKS:
-// This program reads a file and counts the number of occurrences
-// of each character in it.  A huffman tree is then created from
-// the occurences data.
 //
 // INPUT:
 // A simple file of text
 //
 // OUTPUT:
-// the file is echoed here (tho you wouldn't want to do this for
-// a longer file, followed by the counts for each character.
 //
 //
 
@@ -28,37 +25,67 @@ using namespace std;
 //**************************M A I N*****************************
 //**************************************************************
 
-//Main here opens a file and reads individual characters, inserting
-//them in an OccurrenceList in order to count the number of instances
-//of each particular character.
+//Main here opens a file and reads individual characters
 int main(void) {
-	ifstream dataFile; //the input file
 
 	string fileName;   //name of the desired input file
-	char data[256];           //a char from the input file
-	int count = 0;
+	char xcts[256];  
+	string str;
+	string substr;
+	int xctcount = 0;
+	int tmv = 0; 
+	int num = 0;
+	ifstream dataFile; //the input file
+
+	
+	//enum itemsetX = {A, B, C, D, E, F, G, H};
+	//candidate 1
+	int C1[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
+		
 
 	//prompt for the desired input file name
-	cout <<"Please enter input file name:";
-	cin >> fileName;
-	if (fileName=="")
-		cout <<"\nNo filename entered.\n";
-	else {
-		//open the file
-		dataFile.open(fileName.c_str());
-
-	    //read chars and insert until eof
-		while(dataFile.getline(data, 256)) {
-		     
-
-			 
-        }//while
-
-		//we've read all the data
-		cout << endl;
+	//cout <<"Please enter input file name:";
+	//cin >> fileName;
+	
+	//if (fileName==""){
+	//	cout <<"\nNo filename entered.\n";
+	//}
+	
+	//open the file
+	//dataFile.open(fileName.c_str());
+	dataFile.open("dcgtable.txt");
 		
-	}
-	dataFile.close();
+	//newLine = &dataFile.getline(xcts, 256);
+	dataFile.getline(xcts,256);
+	xctcount = atoi(xcts);		//transaction count
+	cout <<"There are "<< xctcount <<" transactions."<<endl;
+	
+	int tmvxcts[xctcount]; 
+	//dataFile.close();
+		
+	//for(int k=1; k<C1.length; k++){
+			
+		for(int i=0; i<xctcount; i++){
+			
+			//count and store tmv(T)
+			//if(k == 1){
+				dataFile.getline(xcts, 256);
+				str = xcts;
+				unsigned found = str.find_last_of("\t");
+				substr = str.substr(found+1);
+				for(int j=0; j<substr.size(); j++){
+					if(substr.compare(j,1, " ") != 0)
+						tmv += atoi(&substr.at(j));
+				}
+				cout <<tmv<<endl;
+				tmv = 0;
+				
+				
+			//}	
+		} 
+		
+	//}
+		
 
   	return(1);
 }
