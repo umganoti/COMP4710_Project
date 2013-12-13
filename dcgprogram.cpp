@@ -20,7 +20,28 @@ using namespace std;
 // OUTPUT:
 //
 //
-
+int calculate_tmvDB (int arr[], int length)
+{
+	int tmv_total = 0;
+	for(int i=0; i<length; i++){
+		tmv_total += arr[i];
+	}
+	return tmv_total;
+}
+int calculate_tmvT(const char *s)
+{
+	string str = s;
+	string substr;
+	int tmv = 0;
+	unsigned found = str.find_last_of("\t");
+	substr = str.substr(found+1);
+	for(int j=0; j<substr.size(); j++){
+		if(substr.compare(j,1, " ") != 0)
+		tmv += atoi(&substr.at(j));
+						
+	}
+	return tmv;
+}
 //**************************************************************
 //**************************M A I N*****************************
 //**************************************************************
@@ -30,15 +51,16 @@ int main(void) {
 
 	string fileName;   //name of the desired input file
 	char xcts[256];  
-	string str;
-	string substr;
 	int xctcount = 0;
 	int tmv = 0; 
 	int num = 0;
+	float minShare = 0.3;
+	int tmv_total = 0; 
 	ifstream dataFile; //the input file
+	int min_lmv = 0;
 
 	
-	//enum itemsetX = {A, B, C, D, E, F, G, H};
+	enum {A, B, C, D, E, F, G, H};
 	//candidate 1
 	int C1[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
 		
@@ -61,28 +83,31 @@ int main(void) {
 	cout <<"There are "<< xctcount <<" transactions."<<endl;
 	
 	int tmvxcts[xctcount]; 
-	//dataFile.close();
+	
+	//calculates tmvDB and tmv for each transaction
+	for(int i=0; i<xctcount; i++){
+			
+		dataFile.getline(xcts, 256);
+		tmvxcts[i] = calculate_tmvT(xcts);
+				
+		if(i == xctcount - 1){
+			tmv_total = calculate_tmvDB(tmvxcts, xctcount);
+			cout <<tmv_total<<endl;
+		}
+	}
+	dataFile.close();
+	dataFile.open("dcgtable.txt");
+	dataFile.ignore(256, '\n');
+	dataFile.getline(xcts,256);
+	min_lmv = minShare * tmv_total;
+	//cout <<xcts<<endl;
 		
 	//for(int k=1; k<C1.length; k++){
 			
-		for(int i=0; i<xctcount; i++){
+		//for(int i=0; i<xctcount; i++){
 			
-			//count and store tmv(T)
-			//if(k == 1){
-				dataFile.getline(xcts, 256);
-				str = xcts;
-				unsigned found = str.find_last_of("\t");
-				substr = str.substr(found+1);
-				for(int j=0; j<substr.size(); j++){
-					if(substr.compare(j,1, " ") != 0)
-						tmv += atoi(&substr.at(j));
-				}
-				cout <<tmv<<endl;
-				tmv = 0;
-				
-				
-			//}	
-		} 
+			
+		//} 
 		
 	//}
 		
