@@ -3,6 +3,7 @@
 #include <string>    //strings
 #include <strstream> //stringstreams for converting data.
 #include <stdlib.h> 
+#include <vector>
 using namespace std;
 
 
@@ -42,6 +43,13 @@ int calculate_tmvT(const char *s)
 	}
 	return tmv;
 }
+void ignore_col(ifstream *dFile)
+{
+	for(int i=0; i<2; i++){
+		dFile->ignore(256,'\t');
+	}
+	
+}
 //**************************************************************
 //**************************M A I N*****************************
 //**************************************************************
@@ -58,7 +66,6 @@ int main(void) {
 	int tmv_total = 0; 
 	ifstream dataFile; //the input file
 	int min_lmv = 0;
-
 	
 	enum {A, B, C, D, E, F, G, H};
 	//candidate 1
@@ -95,19 +102,19 @@ int main(void) {
 			cout <<tmv_total<<endl;
 		}
 	}
+	min_lmv = minShare * tmv_total;
 	dataFile.close();
 	dataFile.open("dcgtable.txt");
-	dataFile.ignore(256, '\n');
-	dataFile.getline(xcts,256);
-	min_lmv = minShare * tmv_total;
-	//cout <<xcts<<endl;
-		
+	dataFile.ignore(256,'\n');
+			
 	//for(int k=1; k<C1.length; k++){
 			
-		//for(int i=0; i<xctcount; i++){
+		for(int i=0; i<xctcount; i++){
+			ignore_col(&dataFile);
+			dataFile.getline(xcts,256);
+			cout <<xcts<<endl;
 			
-			
-		//} 
+		} 
 		
 	//}
 		
