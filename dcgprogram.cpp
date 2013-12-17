@@ -4,6 +4,7 @@
 #include <strstream> //stringstreams for converting data.
 #include <stdlib.h> 
 #include <vector>
+#include <math.h>
 using namespace std;
 
 
@@ -55,37 +56,39 @@ void ignore_col(ifstream *dFile)
 //**************************************************************
 
 //Main here opens a file and reads individual characters
-int main(void) {
+//int main(void) {
+int main(int argc, char* argv[]) {
 
 	string fileName;   //name of the desired input file
 	char xcts[256];  
 	int xctcount = 0;
 	int tmv = 0; 
 	int num = 0;
-	float minShare = 0.3;
+	float minShare;
 	int tmv_total = 0; 
-	ifstream dataFile; //the input file
 	int min_lmv = 0;
 	
-	enum {A, B, C, D, E, F, G, H};
-	//candidate 1
-	int C1[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
+	
+	if (argc < 3) {
+        cerr << "Usage: " << argv[0] << "--FILENAME MINSHARE" << endl;
+        return 1;
+    }
+    
+	fileName = argv[1];
+	minShare = atof(argv[2]);
 		
-
-	//prompt for the desired input file name
-	//cout <<"Please enter input file name:";
-	//cin >> fileName;
-	
-	//if (fileName==""){
-	//	cout <<"\nNo filename entered.\n";
-	//}
-	
 	//open the file
-	//dataFile.open(fileName.c_str());
-	dataFile.open("dcgtable.txt");
+	ifstream dataFile(fileName.c_str());
+	
+	if(dataFile.is_open()){
+		dataFile.getline(xcts,256);
 		
-	//newLine = &dataFile.getline(xcts, 256);
-	dataFile.getline(xcts,256);
+	}
+	else{
+		cout << "File does not exist." <<endl;
+		return 0;
+	}
+	
 	xctcount = atoi(xcts);		//transaction count
 	cout <<"There are "<< xctcount <<" transactions."<<endl;
 	
@@ -102,9 +105,11 @@ int main(void) {
 			cout <<tmv_total<<endl;
 		}
 	}
-	min_lmv = minShare * tmv_total;
+	min_lmv = ceil(minShare * tmv_total);  //rounds up min_lmv
+	cout << min_lmv <<endl;
 	dataFile.close();
-	dataFile.open("dcgtable.txt");
+	
+	dataFile.open(fileName.c_str());
 	dataFile.ignore(256,'\n');
 			
 	//for(int k=1; k<C1.length; k++){
@@ -117,7 +122,5 @@ int main(void) {
 		} 
 		
 	//}
-		
-
   	return(1);
 }
