@@ -1,7 +1,7 @@
 #include <iostream>  //stream IO
 #include <fstream>   //file IO
 #include <string>    //strings
-#include <strstream> //stringstreams for converting data.
+#include <sstream> //stringstreams for converting data.
 #include <stdlib.h> 
 #include <vector>
 #include <math.h>
