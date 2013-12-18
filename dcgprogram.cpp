@@ -39,7 +39,7 @@ int calculate_tmvT(const char *s)
 	substr = str.substr(found+1);
 	for(int j=0; j<substr.size(); j++){
 		if(substr.compare(j,1, " ") != 0)
-		tmv += atoi(&substr.at(j));
+			tmv += atoi(&substr.at(j));
 						
 	}
 	return tmv;
@@ -50,6 +50,36 @@ void ignore_col(ifstream *dFile)
 		dFile->ignore(256,'\t');
 	}
 	
+}
+int calculate_lmv(const char *s, string itemset)
+{
+	string str = s;
+	string items;
+	string count;
+	string temp;
+	bool exit = false;
+	int lmv = 0;
+	unsigned first = str.find_first_of("\t");
+	unsigned last = str.find_last_of("\t");
+	temp = str.substr(first+2);
+	first = temp.find_first_of("\t");
+	items = temp.substr(0,first);
+	count = str.substr(last+1);
+	
+	for(int i=0; i<itemset.size() && !exit; i++){
+		size_t found = items.find(itemset.at(i));
+		if(found != string::npos)
+			lmv += atoi(&count.at(found));
+			
+		else
+			exit = true;
+	
+	}
+	
+	if(exit)
+		lmv = 0;
+	
+	return lmv;
 }
 //**************************************************************
 //**************************M A I N*****************************
@@ -67,7 +97,9 @@ int main(int argc, char* argv[]) {
 	float minShare;
 	int tmv_total = 0; 
 	int min_lmv = 0;
-	
+	int item_count = 0;
+	int lmv = 0;
+	string str;
 	
 	if (argc < 3) {
         cerr << "Usage: " << argv[0] << "--FILENAME MINSHARE" << endl;
@@ -90,9 +122,8 @@ int main(int argc, char* argv[]) {
 	}
 	
 	xctcount = atoi(xcts);		//transaction count
-	cout <<"There are "<< xctcount <<" transactions."<<endl;
 	
-	int tmvxcts[xctcount]; 
+	int tmvxcts[xctcount]; 		//array that stores TMV for each transaction
 	
 	//calculates tmvDB and tmv for each transaction
 	for(int i=0; i<xctcount; i++){
@@ -100,25 +131,23 @@ int main(int argc, char* argv[]) {
 		dataFile.getline(xcts, 256);
 		tmvxcts[i] = calculate_tmvT(xcts);
 				
-		if(i == xctcount - 1){
-			tmv_total = calculate_tmvDB(tmvxcts, xctcount);
-			cout <<tmv_total<<endl;
+		if(i == xctcount-1){
+			tmv_total = calculate_tmvDB(tmvxcts, xctcount);	//TMV for DB table
 		}
 	}
 	min_lmv = ceil(minShare * tmv_total);  //rounds up min_lmv
-	cout << min_lmv <<endl;
-	dataFile.close();
-	
+
+	dataFile.close();	
 	dataFile.open(fileName.c_str());
 	dataFile.ignore(256,'\n');
-			
+		
 	//for(int k=1; k<C1.length; k++){
 			
 		for(int i=0; i<xctcount; i++){
 			ignore_col(&dataFile);
 			dataFile.getline(xcts,256);
-			cout <<xcts<<endl;
-			
+			lmv += calculate_lmv(xcts, "CE");
+			cout<<lmv<<endl;	
 		} 
 		
 	//}
