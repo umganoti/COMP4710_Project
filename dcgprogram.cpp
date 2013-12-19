@@ -5,6 +5,8 @@
 #include <stdlib.h> 
 #include <vector>
 #include <math.h>
+#include <map>
+
 using namespace std;
 
 
@@ -22,14 +24,6 @@ using namespace std;
 // OUTPUT:
 //
 //
-int calculate_tmvDB (int arr[], int length)
-{
-	int tmv_total = 0;
-	for(int i=0; i<length; i++){
-		tmv_total += arr[i];
-	}
-	return tmv_total;
-}
 int calculate_tmvT(const char *s)
 {
 	string str = s;
@@ -99,6 +93,7 @@ int main(int argc, char* argv[]) {
 	int min_lmv = 0;
 	int item_count = 0;
 	int lmv = 0;
+	map<char, int> Candidates;
 	string str;
 	
 	if (argc < 3) {
@@ -116,7 +111,7 @@ int main(int argc, char* argv[]) {
 		dataFile.getline(xcts,256);
 		
 	}
-	else{
+	else {
 		cout << "File does not exist." <<endl;
 		return 0;
 	}
@@ -124,17 +119,19 @@ int main(int argc, char* argv[]) {
 	xctcount = atoi(xcts);		//transaction count
 	
 	int tmvxcts[xctcount]; 		//array that stores TMV for each transaction
-	
+	int total_tmv = 0;
 	//calculates tmvDB and tmv for each transaction
 	for(int i=0; i<xctcount; i++){
 			
 		dataFile.getline(xcts, 256);
 		tmvxcts[i] = calculate_tmvT(xcts);
-				
-		if(i == xctcount-1){
-			tmv_total = calculate_tmvDB(tmvxcts, xctcount);	//TMV for DB table
-		}
+		total_tmv += tmvxcts[i]; 
+			
+		cout << "tmv of transaction " << i <<": "<< tmvxcts[i] << "\n";
 	}
+
+	cout << "Total tmv: " << total_tmv << "\n";
+	
 	min_lmv = ceil(minShare * tmv_total);  //rounds up min_lmv
 
 	dataFile.close();	

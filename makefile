@@ -1,7 +1,7 @@
 dcgprogram: dcgprogram.o Candidate.o
 	clang++ -o dcg.out dcgprogram.o Candidate.o
 
-dcgprogram.o: test.cpp Candidate.h
+dcgprogram.o: dcgprogram.cpp Candidate.h
 	clang++ -c dcgprogram.cpp
 
 Candidate.o: Candidate.h Candidate.cpp
