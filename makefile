@@ -1,8 +1,8 @@
-test: test.o Candidate.o
-	clang++ test.o Candidate.o
+dcgprogram: dcgprogram.o Candidate.o
+	clang++ -o dcg.out dcgprogram.o Candidate.o
 
-test.o: test.cpp Candidate.h
-	clang++ -c test.cpp
+dcgprogram.o: test.cpp Candidate.h
+	clang++ -c dcgprogram.cpp
 
 Candidate.o: Candidate.h Candidate.cpp
 	clang++ -c Candidate.cpp
