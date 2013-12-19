@@ -98,9 +98,8 @@ int main(int argc, char* argv[]) {
 	float minShare;
 	int tmv_total = 0; 
 	int min_lmv = 0;
-	int item_count = 0;
 	int lmv = 0;
-	map<char, int> Candidates;
+	map<char, int> candidates;
 	string str;
 	
 	if (argc < 3) {
@@ -132,15 +131,19 @@ int main(int argc, char* argv[]) {
 			
 		dataFile.getline(xcts, 256);
 		tmvxcts[i] = calculate_tmvT(xcts);
-		total_tmv += tmvxcts[i]; //iterator for tmvDB
+		total_tmv += tmvxcts[i]; //running count of tmvDB
 
-
+		//parse the transaction
 		string transaction = xcts;
 		for(int	j= 1; j < transaction.size(); j++) {
-			if ( isupper(transaction.at(j))) {
-				item_count = find_count(transaction.substr(j+2));
-				cout << "Character: " << transaction.at(j)<< " Count:" << item_count << "\n";
-				
+			if ( isupper(transaction.at(j))) {  //found a transaction item
+				if (candidates.find(transaction.at(j)) == candidates.end() ) {
+					//not in map yet...create it
+					candidates[transaction.at(j)] = find_count(transaction.substr(j+2));
+				} else {
+					//is already in map... add to it
+					candidates[transaction.at(j)] += find_count(transaction.substr(j+2));
+				}
 			}
 		}
 
@@ -149,6 +152,11 @@ int main(int argc, char* argv[]) {
 	}
 
 	cout << "Total tmv: " << total_tmv << "\n";
+
+	//iterates through entire hashmap of candidates
+	for( map<char, int>::iterator ii=candidates.begin(); ii!=candidates.end(); ++ii) {
+		cout << (*ii).first << ": " << (*ii).second << "\n";
+	}
 	
 	min_lmv = ceil(minShare * tmv_total);  //rounds up min_lmv
 
