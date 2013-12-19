@@ -75,6 +75,13 @@ int calculate_lmv(const char *s, string itemset)
 	
 	return lmv;
 }
+
+//given a string that starts with an item in the form "A:12 ..." finds the count(12)
+//...specifically for if the count is more than one character.
+int find_count(string transaction) {
+	int first_space = transaction.find_first_of(' ');
+	return atoi(transaction.substr(0,first_space).c_str());
+}
 //**************************************************************
 //**************************M A I N*****************************
 //**************************************************************
@@ -131,7 +138,7 @@ int main(int argc, char* argv[]) {
 		string transaction = xcts;
 		for(int	j= 1; j < transaction.size(); j++) {
 			if ( isupper(transaction.at(j))) {
-				item_count = atoi(&transaction.at(j+2));
+				item_count = find_count(transaction.substr(j+2));
 				cout << "Character: " << transaction.at(j)<< " Count:" << item_count << "\n";
 				
 			}
