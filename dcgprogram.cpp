@@ -125,7 +125,18 @@ int main(int argc, char* argv[]) {
 			
 		dataFile.getline(xcts, 256);
 		tmvxcts[i] = calculate_tmvT(xcts);
-		total_tmv += tmvxcts[i]; 
+		total_tmv += tmvxcts[i]; //iterator for tmvDB
+
+
+		string transaction = xcts;
+		for(int	j= 1; j < transaction.size(); j++) {
+			if ( isupper(transaction.at(j))) {
+				item_count = atoi(&transaction.at(j+2));
+				cout << "Character: " << transaction.at(j)<< " Count:" << item_count << "\n";
+				
+			}
+		}
+
 			
 		cout << "tmv of transaction " << i <<": "<< tmvxcts[i] << "\n";
 	}
@@ -143,8 +154,8 @@ int main(int argc, char* argv[]) {
 		for(int i=0; i<xctcount; i++){
 			ignore_col(&dataFile);
 			dataFile.getline(xcts,256);
-			lmv += calculate_lmv(xcts, "CE");
-			cout<<lmv<<endl;	
+			//lmv += calculate_lmv(xcts, "CE");
+			//cout<<lmv<<endl;	
 		} 
 		
 	//}
