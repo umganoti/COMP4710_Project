@@ -40,43 +40,6 @@ int calculate_tmvT(const char *s)
 	}
 	return tmv;
 }
-void ignore_col(ifstream *dFile)
-{
-	for(int i=0; i<2; i++){
-		dFile->ignore(256,'\t');
-	}
-
-}
-int calculate_lmv(const char *s, string itemset)
-{
-	string str = s;
-	string items;
-	string count;
-	string temp;
-	bool exit = false;
-	int lmv = 0;
-	unsigned first = str.find_first_of("\t");
-	unsigned last = str.find_last_of("\t");
-	temp = str.substr(first+2);
-	first = temp.find_first_of("\t");
-	items = temp.substr(0,first);
-	count = str.substr(last+1);
-
-	for(int i=0; i<itemset.size() && !exit; i++){
-		size_t found = items.find(itemset.at(i));
-		if(found != string::npos)
-			lmv += atoi(&count.at(found));
-
-		else
-			exit = true;
-
-	}
-
-	if(exit)
-		lmv = 0;
-
-	return lmv;
-}
 
 //given a string that starts with an item in the form "A:12 ..." finds the count (12)
 //...specifically for if the count is more than one character.
@@ -147,7 +110,7 @@ int main(int argc, char* argv[]) {
 	dataFile.open(fileName.c_str());
 	dataFile.ignore(256,'\n');
 
-	for (int k = 1; k < 3; k++) {
+	for (int k = 1; k < 11; k++) {
 		for(int i=0; i<xctcount; i++){
 
 			dataFile.getline(xcts, 256);
@@ -199,12 +162,20 @@ int main(int argc, char* argv[]) {
 					if (all_found) {
 						candidates[(*ii).first] += running_count;
 						
-						int start_pos = transaction.find(*((*ii).first).rbegin());
+						int start_pos = transaction.find(*((*ii).first).rbegin()); //start after the last character in key
 						if (start_pos == string::npos) { break; }	
 						//check to see if tmv needs to be added to at this point.
 						for (int j = start_pos; j < transaction.size(); j++) {
 							if(isupper(transaction.at(j)) && (*ii).first.find(transaction.at(j)) == string::npos) {
 								cout << "For " << (*ii).first << " we found a: " << transaction.at(j) << "\n";
+								if (tmv_map.find((*ii).first + transaction.substr(j,1)) == tmv_map.end() ) {
+									//not found make...
+									cout << "\n\nHERE\n\n";
+									tmv_map[(*ii).first + transaction.substr(j,1)] = tmvxcts[i];
+								} else {
+									cout << "\n\nDAEWFDS\n\n";
+									tmv_map[(*ii).first + transaction.substr(j,1)] += tmvxcts[i];
+								}
 							}
 						}
 					}
@@ -221,6 +192,8 @@ int main(int argc, char* argv[]) {
 
 		//iterates through entire hashmap and prints out contents
 		for( map<string, int>::iterator ii=tmv_map.begin(); ii!=tmv_map.end(); ++ii) {
+		
+			cout << (*ii).first << ": " << (*ii).second << "\n";
 			if ((*ii).second >= min_lmv) {
 				next_can[(*ii).first] = 0;	
 			}
@@ -244,22 +217,6 @@ int main(int argc, char* argv[]) {
 	}	
 	
 	dataFile.close();
-	dataFile.open(fileName.c_str());
-	dataFile.ignore(256,'\n');
 
-	//for(int k=1; k<C1.length; k++){
-
-		for(int i=0; i<xctcount; i++){
-			ignore_col(&dataFile);
-			dataFile.getline(xcts,256);
-			//lmv += calculate_lmv(xcts, "CE");
-			//cout<<lmv<<endl;
-
-			string transaction = xcts;
-
-
-		}
-
-	//}
   	return(1);
 }
