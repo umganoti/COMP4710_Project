@@ -24,6 +24,8 @@ using namespace std;
 // OUTPUT:
 //
 //
+
+
 int calculate_tmvT(const char *s)
 {
 	string str = s;
@@ -100,6 +102,8 @@ int main(int argc, char* argv[]) {
 	int min_lmv = 0;
 	int lmv = 0;
 	map<string, int> candidates;
+	map<string, int> next_can; 
+	map<string, int> tmv_map;
 	string str;
 
 	if (argc < 3) {
@@ -126,56 +130,119 @@ int main(int argc, char* argv[]) {
 
 	int tmvxcts[xctcount]; 		//array that stores TMV for each transaction
 	int total_tmv = 0;
-	//calculates tmvDB and tmv for each transaction
-	for(int i=0; i<xctcount; i++){
-
+	for (int i=0; i<xctcount; i++) {
 		dataFile.getline(xcts, 256);
 		tmvxcts[i] = calculate_tmvT(xcts);
-		total_tmv += tmvxcts[i]; //running count of tmvDB
+		total_tmv += tmvxcts[i];
 
-		//parse the transaction
-		string transaction = xcts;
-		for(int	j= 1; j < transaction.size(); j++) {
-			if ( isupper(transaction.at(j))) {  //found a transaction item
-				string current_item = transaction.substr(j,1);
-				if (candidates.find(current_item) == candidates.end() ) {
-					//not in map yet...create it
-					candidates[current_item] = find_count(transaction.substr(j+2));
-				} else {
-					//is already in map... add to it
-					candidates[current_item] += find_count(transaction.substr(j+2));
-				}
-                    //find transactions for k+1
-                    string rem_trans = transaction.substr(j+2);
-                    for (int l = 0; l < rem_trans.size(); l++) {
-                        if ( isupper(rem_trans.at(l))) {  //found a transaction item
+		cout << "tmv of transaction " << i+1 <<": "<< tmvxcts[i] << "\n";
+	}
 
-							if (candidates.find(current_item + rem_trans.substr(l,1)) == candidates.end() ) {
-								//not found make...
-								candidates[current_item + rem_trans.substr(l,1)] = tmvxcts[i];
-							} else {
-								candidates[current_item + rem_trans.substr(l,1)] += tmvxcts[i];
-							}
+	min_lmv = ceil(minShare * total_tmv);  //rounds up min_lmv
+	
+	cout << "Total tmv: " << total_tmv << " min_lmv: " << min_lmv << "\n";
 
-							
-                        }
-                    }
+	
+	dataFile.close();
+	dataFile.open(fileName.c_str());
+	dataFile.ignore(256,'\n');
+
+	for (int k = 1; k < 3; k++) {
+		for(int i=0; i<xctcount; i++){
+
+			dataFile.getline(xcts, 256);
 			
+			string transaction = xcts;
+			if (k==1) {
+				for(int	j= 1; j < transaction.size(); j++) {
+					if ( isupper(transaction.at(j))) {  //found a transaction item
+						string current_item = transaction.substr(j,1);
+						if (candidates.find(current_item) == candidates.end() ) {
+							//not in map yet...create it
+							candidates[current_item] = find_count(transaction.substr(j+2));
+						} else {
+							//is already in map... add to it
+							candidates[current_item] += find_count(transaction.substr(j+2));
+						}
+						//find transactions for k+1
+						string rem_trans = transaction.substr(j+2);
+						for (int l = 0; l < rem_trans.size(); l++) {
+							if ( isupper(rem_trans.at(l))) {  //found a transaction item
+								if (tmv_map.find(current_item + rem_trans.substr(l,1)) == tmv_map.end() ) {
+									//not found make...
+									tmv_map[current_item + rem_trans.substr(l,1)] = tmvxcts[i];
+								} else {
+									tmv_map[current_item + rem_trans.substr(l,1)] += tmvxcts[i];
+								}
+							}
+						}
+					}
+				}
+			} else {
+				for( map<string, int>::iterator ii=candidates.begin(); ii!=candidates.end(); ++ii) {
+					int running_count = 0;
+					bool all_found = true;
+					for(int l = 0; l < (*ii).first.size(); l++) {
+						bool found = false;
+						for (int j = 1; j < transaction.size(); j++) {
+							if (isupper(transaction.at(j)) && transaction.at(j) == (*ii).first.at(l)) {
+								found = true;
+								running_count += find_count(transaction.substr(j+2));
+								break;
+							} 	
+						}
+						if (!found) {
+							all_found = false;
+							break;
+						}
+					}
+					if (all_found) {
+						candidates[(*ii).first] += running_count;
+						
+						int start_pos = transaction.find(*((*ii).first).rbegin());
+						if (start_pos == string::npos) { break; }	
+						//check to see if tmv needs to be added to at this point.
+						for (int j = start_pos; j < transaction.size(); j++) {
+							if(isupper(transaction.at(j)) && (*ii).first.find(transaction.at(j)) == string::npos) {
+								cout << "For " << (*ii).first << " we found a: " << transaction.at(j) << "\n";
+							}
+						}
+					}
+				}
+			}
+		
+		}
+
+
+		//iterates through entire hashmap and prints out contents
+		for( map<string, int>::iterator ii=candidates.begin(); ii!=candidates.end(); ++ii) {
+			cout << (*ii).first << ": " << (*ii).second << "\n";
+		}
+
+		//iterates through entire hashmap and prints out contents
+		for( map<string, int>::iterator ii=tmv_map.begin(); ii!=tmv_map.end(); ++ii) {
+			if ((*ii).second >= min_lmv) {
+				next_can[(*ii).first] = 0;	
 			}
 		}
 
-		cout << "tmv of transaction " << i <<": "<< tmvxcts[i] << "\n";
-	}
+		for( map<string, int>::iterator ii=next_can.begin(); ii!=next_can.end(); ++ii) {
+			cout << (*ii).first << ": " << (*ii).second << "\n";
+		}
 
-	cout << "Total tmv: " << total_tmv << "\n";
+		if (next_can.empty()) {
+			break;
+		}
+		candidates = next_can;
+		next_can.clear();
+		tmv_map.clear();
+	
+		dataFile.close();
+		dataFile.open(fileName.c_str());
+		dataFile.ignore(256,'\n');
 
-	//iterates through entire hashmap and prints out contents
-	for( map<string, int>::iterator ii=candidates.begin(); ii!=candidates.end(); ++ii) {
-		cout << (*ii).first << ": " << (*ii).second << "\n";
-	}
-
-	min_lmv = ceil(minShare * tmv_total);  //rounds up min_lmv
-
+	}	
+	
 	dataFile.close();
 	dataFile.open(fileName.c_str());
 	dataFile.ignore(256,'\n');
