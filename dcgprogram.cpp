@@ -1,9 +1,7 @@
 #include <iostream>  //stream IO
 #include <fstream>   //file IO
 #include <string>    //strings
-#include <sstream> //stringstreams for converting data.
 #include <stdlib.h>
-#include <vector>
 #include <math.h>
 #include <map>
 
@@ -22,8 +20,8 @@ using namespace std;
 // A simple file of text
 //
 // OUTPUT:
-//
-//
+// SH frequent items for k-itemsets, Candidate TMV values for k-itemsets and
+// k+1-itemsets that could be SH frequent.
 
 
 int calculate_tmvT(const char *s)
@@ -59,10 +57,17 @@ void insert_to_map(map<string, int> &aMap, string key, int value){
 }
 //iterates through entire hashmap and prints out contents
 void print_map(map<string, int> &aMap){
-	for( map<string, int>::iterator ii=aMap.begin(); ii!=aMap.end(); ++ii) {
-		cout << (*ii).first << ": " << (*ii).second << "\n";
+	if(!aMap.empty()){
+		for( map<string, int>::iterator ii=aMap.begin(); ii!=aMap.end(); ++ii) {
+			cout << (*ii).first << ": " << (*ii).second << "\n";
+		}
+	}
+	else{
+		cout <<"There are no values\n";
 	}
 }
+
+//resets ifstream to read from the very beginning of text file
 void resetDataFile(ifstream &file, string fileName){
 	file.close();
 	file.open(fileName);
@@ -83,6 +88,7 @@ int main(int argc, char* argv[]) {
 	map<string, int> candidates;
 	map<string, int> next_can; 
 	map<string, int> tmv_map;
+	map<string, int> sh_freq_map;
 
 	if (argc < 3) {
         cerr << "Usage: " << argv[0] << "--FILENAME MINSHARE" << endl;
@@ -117,7 +123,7 @@ int main(int argc, char* argv[]) {
 
 	min_lmv = ceil(minShare * total_tmv);  //rounds up min_lmv
 		
-	resetDataFile(dataFile, fileName.c_str());
+	resetDataFile(dataFile, fileName.c_str());  
 	
 	for (int k = 1; k < 11; k++) {
 		for(int i=0; i<xctcount; i++){
@@ -172,23 +178,29 @@ int main(int argc, char* argv[]) {
 				}
 			}
 		
+		}		
+		cout << "\n\nAll itemsets that are SH frequent:\n\n";
+		
+		for( map<string, int>::iterator ii=candidates.begin(); ii!=candidates.end(); ++ii) {
+			//if lmv >= min_lmv
+			if ((*ii).second >= min_lmv) {
+				sh_freq_map[(*ii).first] = (*ii).second;	
+			}
+			
 		}
-
-
+		print_map(sh_freq_map);
 		
-		cout << "candidates: "<<"\n\n";
-		print_map(candidates);
-
 		//iterates through entire hashmap and prints out contents
-		cout << "tmv values: "<<"\n\n";
+		cout << "\n\nTMV values for "<<k<<"-itemsets:\n\n";
 		for( map<string, int>::iterator ii=tmv_map.begin(); ii!=tmv_map.end(); ++ii) {
-		
-			cout << (*ii).first << ": " << (*ii).second << "\n";
+			//if tmv >= min_lmv
 			if ((*ii).second >= min_lmv) {
 				next_can[(*ii).first] = 0;	
 			}
 		}
-		cout << "next candidates: "<<"\n\n";		
+		print_map(tmv_map);
+		
+		cout <<"\n\n"<<k+1<<"-itemsets that could be SH-frequent:\n\n";		
 		print_map(next_can);
 		
 		if (next_can.empty()) {

@@ -1,8 +1,6 @@
-dcgprogram: dcgprogram.o Candidate.o
-	clang++ -o dcg.out dcgprogram.o Candidate.o
+dcgprogram: dcgprogram.o
+	clang++ -o dcg.out dcgprogram.o
 
-dcgprogram.o: dcgprogram.cpp Candidate.h
+dcgprogram.o: dcgprogram.cpp
 	clang++ -c dcgprogram.cpp
 
-Candidate.o: Candidate.h Candidate.cpp
-	clang++ -c Candidate.cpp
