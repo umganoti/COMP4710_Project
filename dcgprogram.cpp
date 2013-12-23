@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <map>
+#include <vector>
 
 using namespace std;
 
@@ -57,20 +58,21 @@ void insert_to_map(map<string, int> &aMap, string key, int value){
 }
 //iterates through entire hashmap and prints out contents
 void print_map(map<string, int> &aMap){
-	if(!aMap.empty()){
-		for( map<string, int>::iterator ii=aMap.begin(); ii!=aMap.end(); ++ii) {
-			cout << (*ii).first << ": " << (*ii).second << "\n";
-		}
-	}
-	else{
+	if(aMap.empty()){
 		cout <<"There are no values\n";
 	}
+	else{
+		for( map<string, int>::iterator ii=aMap.begin(); ii!=aMap.end(); ++ii) {
+			cout << (*ii).first << ": " << (*ii).second<<"\n";			
+		}		
+	}
+	
 }
-
 //resets ifstream to read from the very beginning of text file
 void resetDataFile(ifstream &file, string fileName){
 	file.close();
 	file.open(fileName);
+	file.ignore(256,'\n');
 	file.ignore(256,'\n');
 }
 //**************************************************************
@@ -79,24 +81,42 @@ void resetDataFile(ifstream &file, string fileName){
 
 //Main here opens a file and reads individual characters
 int main(int argc, char* argv[]) {
-
+	clock_t start, end;
+	double msecs;
+	start = clock();
 	string fileName;   //name of the desired input file
 	char xcts[256];
 	int xctcount = 0;
+	int domain_items = 0;
 	float minShare;
 	int min_lmv = 0;
+	bool showFSH;
+	bool showTMV;
+	bool showNextCan;
+	bool showTime;
+	bool cntFSH;	
 	map<string, int> candidates;
 	map<string, int> next_can; 
 	map<string, int> tmv_map;
-	map<string, int> sh_freq_map;
-
-	if (argc < 3) {
-        cerr << "Usage: " << argv[0] << "--FILENAME MINSHARE" << endl;
+	
+	if (argc < 8 || argc > 8) {
+        cerr << "Usage: " << argv[0] << " TDB minshare showFSH showTMV showNextCan cntFSH showTime\n";
+        cerr << "\tminshare\tFLOAT\n";
+        cerr << "\tshowFSH\t\t0(No) or 1(Yes) to show freq SH for k-itemset\n";
+        cerr << "\tshowTMV\t\t0(No) or 1(Yes) to show TMV values for k-itemset\n";
+        cerr << "\tshowNextCan\t0(No) or 1(Yes) to show items that could be SH freq\n";
+        cerr << "\tcntFSH\t\t0(No) or 1(Yes) to count SH frequent for k sequences\n";
+        cerr << "\tshowTime\t0(No) or 1(Yes) to show runtime SH\n";       
         return 1;
     }
 
 	fileName = argv[1];
 	minShare = atof(argv[2]);
+	showFSH = atoi(argv[3]);
+	showTMV = atoi(argv[4]);
+	showNextCan = atoi(argv[5]);
+	cntFSH = atoi(argv[6]);
+	showTime = atoi(argv[7]);
 
 	//open the file
 	ifstream dataFile(fileName.c_str());
@@ -109,7 +129,8 @@ int main(int argc, char* argv[]) {
 		cout << "File does not exist." <<endl;
 		return 0;
 	}
-
+	domain_items = atoi(xcts);
+	dataFile.getline(xcts,256);
 	xctcount = atoi(xcts);		//transaction count
 
 	int tmvxcts[xctcount]; 		//array that stores TMV for each transaction
@@ -120,12 +141,11 @@ int main(int argc, char* argv[]) {
 		total_tmv += tmvxcts[i];
 
 	}
-
-	min_lmv = ceil(minShare * total_tmv);  //rounds up min_lmv
-		
+	vector<map <string, int> >freq_array (domain_items, map<string, int>()); //initialize freq array
+	min_lmv = ceil(minShare * total_tmv);  //rounds up min_lmv	
 	resetDataFile(dataFile, fileName.c_str());  
 	
-	for (int k = 1; k < 11; k++) {
+	for (int k = 1; k < domain_items+1; k++) {
 		for(int i=0; i<xctcount; i++){
 
 			dataFile.getline(xcts, 256);
@@ -179,32 +199,50 @@ int main(int argc, char* argv[]) {
 			}
 		
 		}		
-		cout << "\n\nAll itemsets that are SH frequent:\n\n";
 		
 		for( map<string, int>::iterator ii=candidates.begin(); ii!=candidates.end(); ++ii) {
 			//if lmv >= min_lmv
 			if ((*ii).second >= min_lmv) {
-				sh_freq_map[(*ii).first] = (*ii).second;	
+				freq_array[k-1][(*ii).first] = (*ii).second;	
 			}
+					
+		}
+		
+		
+		if(showFSH || cntFSH){
+			cout <<"\n\n"<<k<<"-itemsets that are SH frequent:\n\n";
 			
-		}
-		print_map(sh_freq_map);
-		
-		//iterates through entire hashmap and prints out contents
-		cout << "\n\nTMV values for "<<k<<"-itemsets:\n\n";
-		for( map<string, int>::iterator ii=tmv_map.begin(); ii!=tmv_map.end(); ++ii) {
-			//if tmv >= min_lmv
-			if ((*ii).second >= min_lmv) {
-				next_can[(*ii).first] = 0;	
+			if(cntFSH){
+				cout <<"|L"<<k<<"| = "<<freq_array.at(k-1).size()<<"\n";
+			}
+			if(showFSH){
+				print_map(freq_array.at(k-1));
 			}
 		}
-		print_map(tmv_map);
 		
-		cout <<"\n\n"<<k+1<<"-itemsets that could be SH-frequent:\n\n";		
-		print_map(next_can);
+		if(showTMV){
+			cout << "\n\nTMV values for "<<k<<"-itemsets:\n\n";
+			print_map(tmv_map);
+		}
 		
+		
+		for( map<string, int>::iterator ii=tmv_map.begin(); ii!=tmv_map.end(); ++ii) {
+			//if tmv >= min_lmv		
+			if ((*ii).second >= min_lmv) {
+				next_can[(*ii).first] = (*ii).second;
+				
+			}
+		}
+		if(showNextCan){
+			cout <<"\n\n"<<k+1<<"-itemsets that could be SH-frequent:\n\n";
+			print_map(next_can);
+		}	
 		if (next_can.empty()) {
 			break;
+		}
+		
+		for( map<string, int>::iterator ii=next_can.begin(); ii!=next_can.end(); ++ii) {
+			next_can[(*ii).first] = 0;
 		}
 		candidates = next_can;
 		next_can.clear();
@@ -213,6 +251,11 @@ int main(int argc, char* argv[]) {
 	}	
 	
 	dataFile.close();
-
+	end = clock();
+	msecs = ((double) (end - start)) * 1000 / CLOCKS_PER_SEC;
+	
+	if(showTime){
+		cout <<"\nTotal runtime is "<<msecs<<" msec\n\n";
+	}
   	return(1);
 }
