@@ -4,14 +4,12 @@
 #include <stdlib.h>
 #include <math.h>
 #include <map>
-#include <vector>
-
 using namespace std;
 
 
 //--------------------------------------------------------
 // NAME		      : Noel Ganotisi and Ian Armit
-// STUDENT NUMBER : 6721898
+// STUDENT NUMBER : 6721898 and 7637713
 // COURSE		  : COMP4710
 // INSTRUCTOR	  : Carson K. Leung
 //
@@ -21,8 +19,9 @@ using namespace std;
 // A simple file of text
 //
 // OUTPUT:
-// SH frequent items for k-itemsets, Candidate TMV values for k-itemsets and
-// k+1-itemsets that could be SH frequent.
+// SH frequent items for k-itemsets, Candidate TMV values for k-itemsets,
+// k+1-itemsets that could be SH frequent, SH-frequency count for k-itemsets 
+// and the runtime of the program.
 
 
 int calculate_tmvT(const char *s)
@@ -98,6 +97,7 @@ int main(int argc, char* argv[]) {
 	map<string, int> candidates;
 	map<string, int> next_can; 
 	map<string, int> tmv_map;
+	map<string, int> freq_map;
 	
 	if (argc < 8 || argc > 8) {
         cerr << "Usage: " << argv[0] << " TDB minshare showFSH showTMV showNextCan cntFSH showTime\n";
@@ -106,7 +106,7 @@ int main(int argc, char* argv[]) {
         cerr << "\tshowTMV\t\t0(No) or 1(Yes) to show TMV values for k-itemset\n";
         cerr << "\tshowNextCan\t0(No) or 1(Yes) to show items that could be SH freq\n";
         cerr << "\tcntFSH\t\t0(No) or 1(Yes) to count SH frequent for k sequences\n";
-        cerr << "\tshowTime\t0(No) or 1(Yes) to show runtime SH\n";       
+        cerr << "\tshowTime\t0(No) or 1(Yes) to show runtime\n";       
         return 1;
     }
 
@@ -141,7 +141,6 @@ int main(int argc, char* argv[]) {
 		total_tmv += tmvxcts[i];
 
 	}
-	vector<map <string, int> >freq_array (domain_items, map<string, int>()); //initialize freq array
 	min_lmv = ceil(minShare * total_tmv);  //rounds up min_lmv	
 	resetDataFile(dataFile, fileName.c_str());  
 	
@@ -203,7 +202,7 @@ int main(int argc, char* argv[]) {
 		for( map<string, int>::iterator ii=candidates.begin(); ii!=candidates.end(); ++ii) {
 			//if lmv >= min_lmv
 			if ((*ii).second >= min_lmv) {
-				freq_array[k-1][(*ii).first] = (*ii).second;	
+				freq_map[(*ii).first] = (*ii).second;
 			}
 					
 		}
@@ -213,10 +212,10 @@ int main(int argc, char* argv[]) {
 			cout <<"\n\n"<<k<<"-itemsets that are SH frequent:\n\n";
 			
 			if(cntFSH){
-				cout <<"|L"<<k<<"| = "<<freq_array.at(k-1).size()<<"\n";
+				cout <<"|L"<<k<<"| = "<<freq_map.size()<<"\n";
 			}
 			if(showFSH){
-				print_map(freq_array.at(k-1));
+				print_map(freq_map);
 			}
 		}
 		
@@ -244,9 +243,11 @@ int main(int argc, char* argv[]) {
 		for( map<string, int>::iterator ii=next_can.begin(); ii!=next_can.end(); ++ii) {
 			next_can[(*ii).first] = 0;
 		}
+		
 		candidates = next_can;
 		next_can.clear();
 		tmv_map.clear();
+		freq_map.clear();
 		resetDataFile(dataFile, fileName.c_str());
 	}	
 	
