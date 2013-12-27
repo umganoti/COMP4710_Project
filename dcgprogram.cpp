@@ -70,7 +70,7 @@ void print_map(map<string, int> &aMap){
 //resets ifstream to read from the very beginning of text file
 void resetDataFile(ifstream &file, string fileName){
 	file.close();
-	file.open(fileName);
+	file.open(fileName.c_str());
 	file.ignore(256,'\n');
 	file.ignore(256,'\n');
 }
